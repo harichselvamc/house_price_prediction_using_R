@@ -119,7 +119,7 @@ multiple_model<-lm(price~.,data=df)
 summary(multiple_model)
 
 
-install.packages("caTools")
+#install.packages("caTools")
 library("caTools")
 
 set.seed(0)
@@ -138,7 +138,60 @@ mean((training_set$price-train_a)^2)
 mean((test_set$price-test_a)^2)
 
 
+#install.packages("leaps")
+library("leaps")
+
+lm_best=regsubsets(price~.,data=df,nvmax = 16)
+summary(lm_best)
+
+summary(lm_best)$adjr2
+
+
+which.max(summary(lm_best)$adjr2)
+
+
+coef(lm_best,9)
+
+lm_forward=regsubsets(price~.,data=df,nvmax = 16,method="forward")
+summary(lm_forward)
+summary(lm_forward)$adjr2
+
+lm_backward=regsubsets(price~.,data=df,nvmax = 16,method="backward")
+summary(lm_backward)
+summary(lm_backward)$adjr2
+
+
+x=model.matrix(price~.,data=df)[,-1]
+y=df$price
+#install.packages("glmnet")
+library("glmnet")
+grid=10^seq(10,-2,length=100)
+grid
 
 
 
+lm_ridge=glmnet(x,y,alpha=0,lambda=grid)
+
+summary(lm_ridge)
+
+cv_fir=cv.glmnet(x,y,alpha=0,lambda=grid)
+plot(cv_fir)
+
+opt_lambda=cv_fir$lambda.min
+opt_lambda
+tss=sum((y-mean(y))^2)
+tss
+
+
+y_a=predict(lm_ridge,s=opt_lambda,newx=x)
+rss=sum((y_a-y)^2)
+rss
+
+
+rsp=1-rss/tss
+rsp
+
+
+lm_lasso=glmnet(x,y,alpha=1,lambda=grid)
+lm_lasso
 
